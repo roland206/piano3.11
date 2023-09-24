@@ -19,6 +19,9 @@ class MusicXML():
         name2pitch = {'C':0, 'D':2, 'E':4, 'F':5, 'G':7, 'A':9, 'H':11, 'B': 11 }
         pos = 0
         level = 90
+
+        self.scanHeader(root)
+
         item = root.find('part').find('measure').find('attributes').find('divisions')
         scale = 64 /int(item.text)
         for mes in root.iter('measure'):
@@ -66,3 +69,16 @@ class MusicXML():
         self.voices = sorted(self.voices, key=lambda n: n.position)
         self.nTakte = len(self.taktStart) - 1
         return
+
+    def scanHeader(self, root):
+        self.title, self.composer = 'unknown', 'unknown'
+        work = root.find('work')
+        if work is not None:
+            title = work.find('work-title')
+            if title is not None: self.title = title.text
+
+        id = root.find('identification')
+        if not id is None:
+            for creator in id.findall('creator'):
+                if creator.attrib['type'] == 'composer':
+                    self.composer = creator.text
