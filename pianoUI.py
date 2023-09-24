@@ -10,6 +10,7 @@ from pianoPlot import *
 import numpy as np
 from partiture import Partiture, Note
 from midi import Midi, MidiCMD
+from MusicXML import MusicXML
 
 class pianoUI(QWidget):
     def __init__(self, setup, parent = None):
@@ -21,6 +22,7 @@ class pianoUI(QWidget):
         self.tachos = []
         self.setup = setup
         self.partiture = setup.partiture
+        self.soll = self.partiture.voices
         layout = QVBoxLayout()
         self.setLayout(layout)
 
@@ -138,15 +140,23 @@ class pianoUI(QWidget):
 
         self.repaint()
     def loadMuse(self):
-        fname, x = QFileDialog.getOpenFileName(self, 'Lade MuseScore Datei', '', 'MuseScore XML (*.mscx);;Projekt (*.part)')
+        fname, x = QFileDialog.getOpenFileName(self, 'Lade MuseScore Datei', '', 'Music XML (*.musicxml);;MuseScore XML (*.mscx);;Projekt (*.part)')
         if fname:
-            if x == 'MuseScore XML (*.mscx)':
+            if x == 'Music XML (*.musicxml)':
+                self.setup.set('partitureFile', fname)
+                self.setup.partiture = MusicXML(self.setup.getStr('partitureFile'))
+                self.partiture = self.setup.partiture
+                self.setup.filename = fname.replace('.mscx', '.part')
+                self.setup.save()
+            elif x == 'MuseScore XML (*.mscx)':
                 self.setup.set('partitureFile', fname)
                 self.setup.partiture = Partiture(self.setup.getStr('partitureFile'))
+                self.partiture = self.setup.partiture
                 self.setup.filename = fname.replace('.mscx', '.part')
                 self.setup.save()
             else:
                 self.setup.load(fname)
+            self.soll = self.partiture.voices
             self.gespielt = []
             self.pedal = Pedal()
 

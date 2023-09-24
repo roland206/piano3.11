@@ -57,15 +57,16 @@ class Midi():
         outPorts = self.getOutputPorts()
 
         self.midi_out = rtmidi2.MidiOut()
-        port = min(port, len(outPorts)-1)
+        port = min(port, len(outPorts) - 1)
         self.midi_out.open_port(port)
         self.outputPortname = outPorts[port]
 
         if (len(inPorts) < 1): return
         self.midi_in = rtmidi2.MidiIn()
         self.midi_in.callback = callback
-        self.midi_in.open_port(0)
-        self.inputPortname = inPorts[0]
+        port = min(port, len(inPorts) - 1)
+        self.midi_in.open_port(port)
+        self.inputPortname = inPorts[port]
 
         token = Semaphore()
         token.acquire()

@@ -1,11 +1,14 @@
 import os.path
 import glob
 import xml.etree.cElementTree as ET
-
+from MusicXML import MusicXML
+from os.path import exists
 from partiture import Partiture
 
+#setupDefaults = {'bpm': 80, 'nLines' : 1, 'ersterTakt': 1, 'nTakte' : 1,
+#                 'partitureFile': 'Nocturne_Op_48_No._2.musicxml'}
 setupDefaults = {'bpm': 80, 'nLines' : 1, 'ersterTakt': 1, 'nTakte' : 1,
-                 'partitureFile': 'spanner.mscx'}
+                 'partitureFile': '-'}
 class Setup():
     def __init__(self, filename = None):
 
@@ -33,9 +36,10 @@ class Setup():
         self.tree = ET.parse(filename)
         self.root = self.tree.getroot()
         self.partiture = None
-        if len(self.getStr('partitureFile')) > 0:
-            self.partiture = Partiture(self.getStr('partitureFile'))
-            self.set('nTakte', min(self.getInt('nTakte'), self.partiture.nTakte))
+        partFile = self.getStr('partitureFile')
+        if not exists(partFile): partFile = ''
+        self.partiture = MusicXML(partFile)
+        self.set('nTakte', min(self.getInt('nTakte'), self.partiture.nTakte))
 
     def save(self):
         tree = ET.ElementTree(self.root)

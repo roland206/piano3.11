@@ -1,13 +1,13 @@
 from PyQt5.QtWidgets import QApplication, QWidget, QDialog, QCheckBox, QFormLayout, QTabWidget
 import sys
-from player import player
+from pianoUI import pianoUI
 from setupUI import setupUI
 from setup import Setup
 
 class MainWindow(QTabWidget):
     def __init__(self, setup):
         super(MainWindow, self).__init__()
-        self.addTab(player(setup), "Lehrer")
+        self.addTab(pianoUI(setup), "Lehrer")
         self.addTab(setupUI(setup), "Setup")
 
         self.currentChanged.connect(self.chanced)
