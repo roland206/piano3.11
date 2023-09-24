@@ -158,6 +158,7 @@ class pianoUI(QWidget):
             self.pedal = Pedal()
             self.titleLabel.setText(self.partiture.composer + ' : ' + self.partiture.title)
 
+
     def monitorWidget(self):
         widget = QWidget()
         layout = QHBoxLayout()
