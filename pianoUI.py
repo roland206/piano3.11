@@ -112,9 +112,6 @@ class pianoUI(QWidget):
             n = Note(note.taste + tastError, int(ticks), pos, 0, note.violine, level)
             self.gespielt.append(n)
 
-
-
- #               self.pedal.add(t, cmd[2] > 0)
         self.superMatcher()
         self.repaint()
     def spinArea(self, label, xmin, xmax, value, function):
@@ -146,7 +143,7 @@ class pianoUI(QWidget):
                 self.setup.set('partitureFile', fname)
                 self.setup.partiture = MusicXML(self.setup.getStr('partitureFile'))
                 self.partiture = self.setup.partiture
-                self.setup.filename = fname.replace('.mscx', '.part')
+                self.setup.filename = fname.replace('.musicxml', '.part')
                 self.setup.save()
             elif x == 'MuseScore XML (*.mscx)':
                 self.setup.set('partitureFile', fname)
@@ -159,6 +156,7 @@ class pianoUI(QWidget):
             self.soll = self.partiture.voices
             self.gespielt = []
             self.pedal = Pedal()
+            self.titleLabel.setText(self.partiture.composer + ' : ' + self.partiture.title)
 
     def monitorWidget(self):
         widget = QWidget()
@@ -186,6 +184,9 @@ class pianoUI(QWidget):
         ctlWidget.setLayout(ctlLayout)
         buttonLayout.addWidget(ctlWidget, stretch = 1)
         buttonLayout.addWidget(self.monitorWidget(), stretch = 3)
+
+        self.titleLabel = QLabel(self.partiture.composer + ' : ' + self.partiture.title)
+        ctlLayout.addWidget(self.titleLabel)
 
         loadMuse = QPushButton('Lade MuseScore Partitur')
         loadMuse.clicked.connect(self.loadMuse)
