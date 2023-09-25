@@ -44,7 +44,7 @@ class Midi():
     def __init__(self, port, caller):
 
         global midiObject, timeBuffer, cmdBuffer, stopKey, stopPedal
-        global token, playList, running, stop
+        global token, playList, running, runCnt, stop
 
         midiObject = caller
         timeBuffer, cmdBuffer = [], []
@@ -52,28 +52,35 @@ class Midi():
 
         self.inputPortname = 'nicht verfügbar'
         self.outputPortname = 'nicht verfügbar'
+        outPortList = self.getOutputPorts()
+        outPortID = len(outPortList) - 1
+        for port in range(len(outPortList)):
+            if 'usb' in outPortList[port].lower(): outPortID = port
 
-        inPorts  = self.getInputPorts()
-        outPorts = self.getOutputPorts()
+        if outPortID >= 0:
+            self.midi_out = rtmidi2.MidiOut()
+            self.midi_out.open_port(outPortID)
+            self.outputPortname = outPortList[outPortID]
+            token = Semaphore()
+            token.acquire()
+            running = False
+            runCnt = 0
+            stop = False
+            thread = threading.Thread(target=self.outputer)
+            thread.start()
 
-        self.midi_out = rtmidi2.MidiOut()
-        port = min(port, len(outPorts) - 1)
-        self.midi_out.open_port(port)
-        self.outputPortname = outPorts[port]
+        inPortList  = self.getInputPorts()
+        inPortID = len(inPortList) - 1
+        for port in range(len(inPortList)):
+            if 'usb' in inPortList[port].lower(): inPortID = port
 
-        if (len(inPorts) > 0):
+        if (inPortID >= 0):
             self.midi_in = rtmidi2.MidiIn()
             self.midi_in.callback = callback
-            port = min(port, len(inPorts) - 1)
-            self.midi_in.open_port(port)
-            self.inputPortname = inPorts[port]
+            self.midi_in.open_port(inPortID)
+            self.inputPortname = inPortList[inPortID]
 
-        token = Semaphore()
-        token.acquire()
-        running = False
-        stop = False
-        thread = threading.Thread(target=self.outputer)
-        thread.start()
+
 
     def getInputPortname(self):  return self.inputPortname
     def getOutputPortname(self): return self.outputPortname
@@ -85,11 +92,12 @@ class Midi():
         return newList
 
     def outputer(self):
-        global token, playList, running, stop
+        global token, playList, running, runCnt, stop
 
         while(True):
             token.acquire()
             running = True
+            runCnt += 1
             list = self.sortList(playList)
             token.release()
             now = list[0].time
@@ -105,14 +113,15 @@ class Midi():
             running = False
 
     def playList(self, list):
-        global token, playList, running, stop
+        global token, playList, running, runCnt, stop
         if running :
             stop = True
             return
         playList = list
         stop = False
+        n = runCnt
         token.release()
-        while(not running):
+        while(n == runCnt):
             time.sleep(1)
         token.acquire()
 
