@@ -42,6 +42,8 @@ class Setup():
         self.set('nTakte', min(self.getInt('nTakte'), self.partiture.nTakte))
 
     def save(self):
+        if not '.part' in self.filename:
+            print(f'WARNING UNEXPECTED FILE EXTENSION: Save setup file to {self.filename}')
         tree = ET.ElementTree(self.root)
         ET.indent(tree, '  ')
         tree.write(self.filename, encoding="utf-8", xml_declaration=True)
