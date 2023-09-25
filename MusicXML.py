@@ -10,6 +10,7 @@ class MusicXML():
         self.voices = []
         self.taktStart = []
         self.nTakte = 0
+        self.title, self.composer = 'unknown', 'unknown'
         try:
             tree = ET.parse(filename)
             root = tree.getroot()
@@ -71,7 +72,7 @@ class MusicXML():
         return
 
     def scanHeader(self, root):
-        self.title, self.composer = 'unknown', 'unknown'
+
         work = root.find('work')
         if work is not None:
             title = work.find('work-title')
