@@ -15,7 +15,10 @@ class Note():
         self.pedalExtension = 0
         self.segment = 0
         self.legato = None
+        self.id = 0
 
+    def setID(self, id):
+        self.id = id
     def getColor(self):
         c = 0
         if not self.violine: c = 1

@@ -8,7 +8,7 @@ from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QBrush
 from PyQt5.QtCore import Qt
 from pianoPlot import *
 import numpy as np
-from partiture import Partiture, Note
+from Note import Note
 from midi import Midi, MidiCMD
 from MusicXML import MusicXML
 
@@ -272,15 +272,89 @@ class pianoUI(QWidget):
         widget.setSizePolicy(policy)
         return widget
 
+    def legato(self):
+        legatoTimes, legatoValues = [], []
+        for s2 in range(1, len(self.soll)):
+            soll2 = self.soll[s2]
+            if soll2.match is None: continue
+            for s1 in range(s2):
+                soll1 = self.soll[s1]
+                if soll1.match is None: continue
+                if soll1.position + soll1.ticks != soll2.position: continue
+                ist1 = soll1.match
+
+                ist2 = soll2.match
+                legato = (ist1.position + ist1.ticks - ist2.position) * self.ticks2sec * 1000
+                ist2.legato = legato
+                if ist1.pedalExtension == 0:
+                    legatoTimes.append(ist2.mappedTime)
+                    legatoValues.append(legato)
+
+        self.legatoData = self.analyseData(legatoTimes, legatoValues)
+        self.legatoTacho.setRanges(self.legatoData['ranges'])
+        self.legatoTacho.setValue(self.legatoData['mean'])
+    def rubatoMeter(self):
+        times, diff = [], []
+        for note in self.soll:
+            if note.match is not None:
+                diff.append(note.position - note.match.mappedTime)
+                times.append(note.position)
+
+        self.rubatoData = self.analyseData(times, np.abs(np.array(diff)))
+        self.rubatoTacho.setRanges(self.rubatoData['ranges'])
+        self.rubatoTacho.setValue(self.rubatoData['mean'])
+    def speedoMeter(self):
+        n = len(self.partiture.taktStart)
+        iMax = len(self.soll) - 1
+        timePoints = 32 * np.linspace(0, n * 8, n * 8)
+        iFirst, iLast = 0,0
+        validSpeeds = []
+        validTimes  = []
+        for iTime,t in enumerate(timePoints):
+            while iFirst < iMax and self.soll[iFirst].position < t - 128:
+                iFirst += 1
+            while iLast  < iMax and self.soll[iLast].position < t + 128:
+                iLast += 1
+            t1, t2 = [], []
+            for i in range(iFirst, iLast + 1):
+                if self.soll[i].match is not None:
+                    t1.append(self.soll[i].position)
+                    t2.append(self.soll[i].match.position)
+            if len(t1) > 3:
+                poly = np.polyfit(t2, t1, 1)
+                validSpeeds.append(poly[0])
+                validTimes.append(t)
+        self.speedData = self.analyseData(validTimes, validSpeeds)
+        if self.speedData['valid']:
+            self.tempoTacho.setRanges(self.speedData['ranges'] * self.partiture.bpm)
+            self.tempoTacho.setValue(self.speedData['mean'] * self.partiture.bpm)
+        else:
+            self.tempoTacho.setRanges([])
+            self.tempoTacho.setValue(None)
+    def analyseData(self, times, data):
+        st = {'valid': False, 'mean': None, 'ranges': []}
+        if times is None or len(times) < 1: return st
+        st['valid'] = True
+        data = np.array(data)
+        st['data'] =  data
+        st['times'] = np.array(times)
+        vmin  = st['min'] = np.min(data)
+        vmean = st['mean'] = np.mean(data)
+        vmax  = st['max'] = np.max(data)
+        vstd  = st['std'] = np.sqrt(np.var(data))
+        st['ranges'] = np.array([[vmin, vmax], [max(vmin, vmean - vstd), min(vmax, vmean + vstd)]])
+        return st
     def getCandidates(self, listSoll, listIst, takt, tmin, tmax):
         # erzeuge listen von candiates
         candidatesSoll, candidatesIst = [], []
         startNext = self.partiture.taktStart[takt+1]
         # Alle soll Kondidaten in Takt <takt> und die ersten Noten im nächstem Takt
         for note in listSoll:
+            if not note.match is None: continue
             if (note.takt - 1) < takt: continue
-            candidatesSoll.append(note)
             if ((note.takt - 1) > takt) and (note.position > startNext): break
+            candidatesSoll.append(note)
+
         # Alle ist Kandidaten im Zeitbereich
         for note in listIst:
             if not note.match is None: continue
@@ -312,90 +386,16 @@ class pianoUI(QWidget):
             soll2ist = np.polyfit(t1, t2, 1)
         return ist2soll, soll2ist, len(list1) - len(t1)
 
-    def legato(self):
-        legatoTimes, legatoValues = [], []
-        for s2 in range(1, len(self.soll)):
-            soll2 = self.soll[s2]
-            if soll2.match is None: continue
-            for s1 in range(s2):
-                soll1 = self.soll[s1]
-                if soll1.match is None: continue
-                if soll1.position + soll1.ticks != soll2.position: continue
-                ist1 = soll1.match
-
-                ist2 = soll2.match
-                legato = (ist1.position + ist1.ticks - ist2.position) * self.ticks2sec * 1000
-                ist2.legato = legato
-                if ist1.pedalExtension == 0:
-                    legatoTimes.append(ist2.mappedTime)
-                    legatoValues.append(legato)
-
-        self.legatoData = self.analyseData(legatoTimes, legatoValues)
-        self.legatoTacho.setRanges(self.legatoData['ranges'])
-        self.legatoTacho.setValue(self.legatoData['mean'])
-
-
-    def rubatoMeter(self):
-        times, diff = [], []
-        for note in self.soll:
-            if note.match is not None:
-                diff.append(note.position - note.match.mappedTime)
-                times.append(note.position)
-
-        self.rubatoData = self.analyseData(times, np.abs(np.array(diff)))
-        self.rubatoTacho.setRanges(self.rubatoData['ranges'])
-        self.rubatoTacho.setValue(self.rubatoData['mean'])
-
-
-    def speedoMeter(self):
-        n = len(self.partiture.taktStart)
-        iMax = len(self.soll) - 1
-        timePoints = 32 * np.linspace(0, n * 8, n * 8)
-        iFirst, iLast = 0,0
-        validSpeeds = []
-        validTimes  = []
-        for iTime,t in enumerate(timePoints):
-            while iFirst < iMax and self.soll[iFirst].position < t - 128:
-                iFirst += 1
-            while iLast  < iMax and self.soll[iLast].position < t + 128:
-                iLast += 1
-            t1, t2 = [], []
-            for i in range(iFirst, iLast + 1):
-                if self.soll[i].match is not None:
-                    t1.append(self.soll[i].position)
-                    t2.append(self.soll[i].match.position)
-            if len(t1) > 3:
-                poly = np.polyfit(t2, t1, 1)
-                validSpeeds.append(poly[0])
-                validTimes.append(t)
-        self.speedData = self.analyseData(validTimes, validSpeeds)
-        if self.speedData['valid']:
-            self.tempoTacho.setRanges(self.speedData['ranges'] * self.partiture.bpm)
-            self.tempoTacho.setValue(self.speedData['mean'] * self.partiture.bpm)
-        else:
-            self.tempoTacho.setRanges([])
-            self.tempoTacho.setValue(None)
-
-    def analyseData(self, times, data):
-        st = {'valid': False, 'mean': None, 'ranges': []}
-        if times is None or len(times) < 1: return st
-        st['valid'] = True
-        data = np.array(data)
-        st['data'] =  data
-        st['times'] = np.array(times)
-        vmin  = st['min'] = np.min(data)
-        vmean = st['mean'] = np.mean(data)
-        vmax  = st['max'] = np.max(data)
-        vstd  = st['std'] = np.sqrt(np.var(data))
-        st['ranges'] = np.array([[vmin, vmax], [max(vmin, vmean - vstd), min(vmax, vmean + vstd)]])
-        return st
 
     def superMatcher(self):
         takt1 = self.setup.getInt('ersterTakt') - 1
         self.soll = list(self.setup.partiture.voices)
-        for note in self.soll: note.match = None
+        for i, note in enumerate(self.soll):
+            note.setID(i)
+            note.match = None
         offset = self.partiture.taktStart[takt1]
-        for note in self.gespielt:
+        for i, note in enumerate(self.gespielt):
+            note.setID(i)
             note.match = None
             note.position += offset
         self.pedal.adjustMeasuredTimes(offset)

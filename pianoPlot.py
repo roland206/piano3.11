@@ -8,7 +8,7 @@ from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QBrush
 from PyQt5.QtCore import Qt
 from plot import *
 import numpy as np
-from partiture import Partiture, Note
+from Note import Note
 from midi import Midi, MidiCMD
 
 class pianoPlot(QWidget):

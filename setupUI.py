@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QWidget, QCheckBox, QFormLayout, QLabel, QGroupBox, 
     QVBoxLayout, QDial, QMenu, QFrame, QFileDialog
 from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QBrush
 from PyQt5.QtCore import Qt
-from partiture import Partiture
+from Note import Note
 
 class setupUI(QWidget):
     def __init__(self, setup, parent = None):

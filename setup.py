@@ -3,7 +3,6 @@ import glob
 import xml.etree.cElementTree as ET
 from MusicXML import MusicXML
 from os.path import exists
-from partiture import Partiture
 
 #setupDefaults = {'bpm': 80, 'nLines' : 1, 'ersterTakt': 1, 'nTakte' : 1,
 #                 'partitureFile': 'Nocturne_Op_48_No._2.musicxml'}
