@@ -9,7 +9,6 @@ from PyQt5.QtCore import Qt
 from plot import *
 import numpy as np
 from Note import Note
-from midi import Midi, MidiCMD
 
 class pianoPlot(QWidget):
     def __init__(self, setup, ui, takt1, parent = None):
