@@ -16,6 +16,8 @@ If a partuture is importet (using the Import Partiture Button) it is displayed i
 Measures have graphical length strongly related to the time for it. Scores within a measure are rectangles with a "timewise correct" length and position.
 Scores with signs have a "#" in the rectangles.
 
+With the mouse in the scores, you can use the mouse wheel to zoon in and out. You can press the left button and move the temporal window arround,
+
 The SW should also be connected to an E-piano via a Midi interface using an USB port.
 The Python package "rtmidi2" is used for the communication. If the SW finds a suitable E-Piano Midi IF it connects to it and shows the used port on the screen.
 
