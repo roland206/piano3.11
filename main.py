@@ -7,15 +7,10 @@ from setup import Setup
 class MainWindow(QTabWidget):
     def __init__(self, setup):
         super(MainWindow, self).__init__()
-        self.addTab(pianoUI(setup), "Lehrer")
+        self.addTab(pianoUI(setup), "Main")
         self.addTab(setupUI(setup), "Setup")
 
-        self.currentChanged.connect(self.chanced)
         self.resize(2800, 1800)
-
-    def chanced(self):
-        print(f"Sollte re-read {self.currentIndex()}")
-
 
 def main():
 
