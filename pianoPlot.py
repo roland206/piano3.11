@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import QWidget, QCheckBox, QFileDialog, QFormLayout, QLabel
     QVBoxLayout, QSpinBox, QDial, QMenu, QFrame,QComboBox
 from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QBrush
 from PyQt5.QtCore import Qt
-from plot import *
 import numpy as np
 from Note import Note
 

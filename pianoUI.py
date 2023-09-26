@@ -137,7 +137,7 @@ class pianoUI(QWidget):
 
         self.repaint()
     def loadMuse(self):
-        fname, x = QFileDialog.getOpenFileName(self, 'Lade MuseScore Datei', '', 'Music XML (*.musicxml);;MuseScore XML (*.mscx);;Projekt (*.part)')
+        fname, x = QFileDialog.getOpenFileName(self, 'Load MuseScore File', '', 'Music XML (*.musicxml);;MuseScore XML (*.mscx);;Projekt (*.part)')
         if fname:
             if x == 'Music XML (*.musicxml)':
                 self.setup.set('partitureFile', fname)
@@ -162,7 +162,7 @@ class pianoUI(QWidget):
         widget = QWidget()
         layout = QHBoxLayout()
         widget.setLayout(layout)
-        self.rubatoTacho = Tacho('Rubato *64.tel', 0, 20, 5, '{value:.0f}')
+        self.rubatoTacho = Tacho('Rubato *64', 0, 20, 5, '{value:.0f}')
         self.tempoTacho = Tacho('Tempo *bpm', 40, 10 * int(self.partiture.bpm/10) + 20, 10, '{value:.0f}')
         self.legatoTacho = Tacho('Legato *msec', -1000, 1000 , 250, '{value:.0f}')
         layout.addWidget(self.rubatoTacho)
@@ -188,7 +188,7 @@ class pianoUI(QWidget):
         self.titleLabel = QLabel(self.partiture.composer + ' : ' + self.partiture.title)
         ctlLayout.addWidget(self.titleLabel)
 
-        loadMuse = QPushButton('Lade MuseScore Partitur')
+        loadMuse = QPushButton('Load Partiture')
         loadMuse.clicked.connect(self.loadMuse)
         ctlLayout.addWidget(loadMuse)
 
@@ -197,11 +197,11 @@ class pianoUI(QWidget):
         btnWidget.setLayout(btnLayout)
         ctlLayout.addWidget(btnWidget)
 
-        btn = QPushButton('Abspielen')
+        btn = QPushButton('Play')
         btn.clicked.connect(self.abspielen)
         btnLayout.addWidget(btn)
 
-        btn = QPushButton('Wiederholen')
+        btn = QPushButton('Repeat')
         btn.clicked.connect(self.wiederholen)
         btnLayout.addWidget(btn)
 
@@ -218,12 +218,12 @@ class pianoUI(QWidget):
         showWidget = QWidget()
         showLayout = QHBoxLayout()
         showWidget.setLayout(showLayout)
-        self.btnPedal = QCheckBox('Pedal Anzeigen')
+        self.btnPedal = QCheckBox('Show Pedal use')
         self.btnPedal.setChecked(True)
         self.btnPedal.clicked.connect(self.repaint)
         showLayout.addWidget(self.btnPedal)
         self.plotSelect = QComboBox()
-        self.plotSelect.addItems(["nix", "Pedal", "Pegel", "Tempo", "Legato"])
+        self.plotSelect.addItems(["-", "Pedal", "Level", "Tempo", "Legato"])
         self.plotSelect.currentIndexChanged.connect( self.plotIndexChange )
         showLayout.addWidget(QLabel('Anzeige: '))
         showLayout.addWidget(self.plotSelect)
@@ -231,7 +231,7 @@ class pianoUI(QWidget):
 
         nt = self.setup.partiture.nTakte
         widSpeed, self.speedSpinBox = self.spinArea('bpm', 5, 140, self.partiture.bpm, self.setSpeed)
-        widFirst, self.firstSpinBox = self.spinArea(f'Erster Takt 1...{nt+1}', 1, nt+1, self.setup.getInt('ersterTakt'), self.setFirst)
+        widFirst, self.firstSpinBox = self.spinArea(f'First Measure 1...{nt+1}', 1, nt+1, self.setup.getInt('ersterTakt'), self.setFirst)
 
         spinner = QWidget()
         spLayout = QHBoxLayout()
