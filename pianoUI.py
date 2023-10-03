@@ -574,8 +574,7 @@ class Pedal():
         else:
             for i in range(start, len(self.mappedTimes)):
                 if self.level[i] <= Pedal.threshold: return i
-            return len(self.mappedTimes) - 1
-        return -1
+            return -1
 
     def getPlotRegions(self, x0, xend, t0, tScale):
         n = len(self.mappedTimes)
