@@ -564,7 +564,8 @@ class Pedal():
         for i in range(n):
             if self.mappedTimes[i] < time: iBefore = i
         if self.level[iBefore] < Pedal.threshold: return False, 0.0
-        iOff = self.indexPedal(iBefore,False)
+        iOff = self.indexPedal(iBefore + 1,False)
+        if iOff < 0: return False, 0.0
         return True, self.mappedTimes[iOff]
 
     def indexPedal(self, start, on):
