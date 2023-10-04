@@ -16,6 +16,7 @@ class pianoPlot(QWidget):
         self.ui = ui
         self.partiture = setup.partiture
         self.timeStart = self.partiture.taktStart[takt1-1]
+        self.minTimeStart = self.timeStart
         self.timeWindow = 512.0
         self.plotIndex = 0
         self.plotName = ''
@@ -25,6 +26,7 @@ class pianoPlot(QWidget):
 
     def setTakt(self, takt):
         self.timeStart = self.partiture.taktStart[takt - 1]
+        self.minTimeStart = self.timeStart
         self.repaint()
     def setPlotIndex(self, index, text):
         self.plotIndex = index
@@ -38,7 +40,7 @@ class pianoPlot(QWidget):
         if self.lastPos < 0: return
         newPos = event.localPos().x()
         xMove = -(newPos - self.lastPos) / self.width()
-        self.timeStart = max(0, self.timeStart + xMove * self.timeWindow)
+        self.timeStart = max(self.minTimeStart, self.timeStart + xMove * self.timeWindow)
         self.lastPos = newPos
         self.repaint()
     def wheelEvent(self, event):
@@ -130,9 +132,9 @@ class pianoPlot(QWidget):
         if usePedal:
             xListPedal, wListPedal = self.ui.pedal.getPlotRegions(xStart, xEnd, self.timeStart, tScale)
             for i in range(len(xListPedal)):
-                self.p.fillRect(xListPedal[i], dOben, wListPedal[i], d * nv - 2, QColor(245,245,245))
-                self.p.fillRect(xListPedal[i], dOben + nv * d + dViolineBass, wListPedal[i], d * nb - 2, QColor(245,245,245))
-                if self.plotIndex > 0: self.p.fillRect(xListPedal[i], y0Plot, wListPedal[i], hPlot, QColor(245, 245, 245))
+                self.p.fillRect(xListPedal[i], dOben, wListPedal[i], d * nv - 2, QColor(242,242,242))
+                self.p.fillRect(xListPedal[i], dOben + nv * d + dViolineBass, wListPedal[i], d * nb - 2, QColor(242,242,242))
+                if self.plotIndex > 0: self.p.fillRect(xListPedal[i], y0Plot, wListPedal[i], hPlot, QColor(242, 242, 242))
 
         self.p.drawPixmap(xStart+2-xExtra, y0Violine - int(5.5*d), int(1.5*d), 3*d, self.violinePixmap)
         self.p.drawPixmap(xStart+2-xExtra, y0Bass    + int(3.4*d), int(1.4*d), int(1.8*d), self.bassPixmap)

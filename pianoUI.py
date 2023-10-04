@@ -134,7 +134,6 @@ class pianoUI(QWidget):
         takt = self.firstSpinBox.value()
         self.setup.set('ersterTakt', takt)
         self.plot.setTakt(takt)
-
         self.repaint()
     def loadMuse(self):
         fname, x = QFileDialog.getOpenFileName(self, 'Load MuseScore File', '', 'Music XML (*.musicxml);;MuseScore XML (*.mscx);;Projekt (*.part)')
@@ -563,7 +562,7 @@ class Pedal():
         iBefore = 0
         for i in range(n):
             if self.mappedTimes[i] < time: iBefore = i
-        if self.level[iBefore] < Pedal.threshold: return False, 0.0
+        if self.level[iBefore] <= Pedal.threshold: return False, 0.0
         iOff = self.indexPedal(iBefore + 1,False)
         if iOff < 0: return False, 0.0
         return True, self.mappedTimes[iOff]
