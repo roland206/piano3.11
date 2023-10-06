@@ -49,7 +49,7 @@ class pianoPlot(QWidget):
                 self.timeStart += self.timeWindow * 0.1
                 self.timeWindow *= 0.8
         else:
-            self.timeStart = max(0, self.timeStart - self.timeWindow * 0.1)
+            self.timeStart = max(self.minTimeStart, self.timeStart - self.timeWindow * 0.1)
             self.timeWindow *= 1.2
         self.repaint()
     def notenArea(self):
@@ -84,7 +84,8 @@ class pianoPlot(QWidget):
         usePedal = self.ui.btnPedal.checkState() and (len(self.ui.pedal.measuredTimes) > 0)
         fm = self.fontMetrics()
         hTotal = self.height()
-        xExtra = 80
+        xExtra = min(60, int(self.width() * 0.1))
+        pixmapWidth = xExtra - 5
         xStart = xExtra + 20
         xEnd = self.width() - 20
         tScale = (xEnd - xStart) / self.timeWindow
@@ -121,7 +122,7 @@ class pianoPlot(QWidget):
         y0Plot    = dOben + dViolineBass + dPlot + (nb + nv) * d
 
         self.p.setBrush(QBrush(QColor(255,255,255)))
-        self.p.drawRect(xStart-2-xExtra, dOben- 1, xEnd - xStart + 4 + xExtra, d * nv)
+        self.p.drawRect(xStart-2-xExtra, dOben- 8, xEnd - xStart + 4 + xExtra, d * nv+7)
         self.p.drawRect(xStart-2-xExtra, dOben + nv * d + dViolineBass- 1, xEnd - xStart + 4 + xExtra, d * nb)
 
         if self.plotIndex > 0:
@@ -136,8 +137,11 @@ class pianoPlot(QWidget):
                 self.p.fillRect(xListPedal[i], dOben + nv * d + dViolineBass, wListPedal[i], d * nb - 2, QColor(242,242,242))
                 if self.plotIndex > 0: self.p.fillRect(xListPedal[i], y0Plot, wListPedal[i], hPlot, QColor(242, 242, 242))
 
-        self.p.drawPixmap(xStart+2-xExtra, y0Violine - int(5.5*d), int(1.5*d), 3*d, self.violinePixmap)
-        self.p.drawPixmap(xStart+2-xExtra, y0Bass    + int(3.4*d), int(1.4*d), int(1.8*d), self.bassPixmap)
+        pixmapWidth = min(pixmapWidth, 2 * d)
+        vh = min(4*d, pixmapWidth * 2)
+        bh = min(4*d, int(pixmapWidth * 1.3))
+        self.p.drawPixmap(xStart+2-xExtra, y0Violine - int(4.5*d + vh/2), pixmapWidth, vh, self.violinePixmap)
+        self.p.drawPixmap(xStart+2-xExtra, y0Bass    + int(4.0*d - bh/2), pixmapWidth, bh, self.bassPixmap)
 
         pen = QPen(QColor(0, 0, 0))
         pen.setWidth(3)

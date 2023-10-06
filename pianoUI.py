@@ -77,6 +77,7 @@ class pianoUI(QWidget):
                 note.violine = note.line >= 0
                 self.gespielt.append(note)
             elif cmd[0] == 176 and key == 64: self.pedal.add(t, cmd[2])
+        if cmd[0] != 176: self.pedal.add(t, 0)
         if len(self.gespielt) > 0:
             t0 = self.gespielt[0].position
             for note in self.gespielt:
@@ -161,7 +162,7 @@ class pianoUI(QWidget):
         widget = QWidget()
         layout = QHBoxLayout()
         widget.setLayout(layout)
-        self.rubatoTacho = Tacho('Rubato *64', 0, 20, 5, '{value:.0f}')
+        self.rubatoTacho = Tacho('Rubato *sixty-fourth', 0, 20, 5, '{value:.0f}')
         self.tempoTacho = Tacho('Tempo *bpm', 40, 10 * int(self.partiture.bpm/10) + 20, 10, '{value:.0f}')
         self.legatoTacho = Tacho('Legato *msec', -1000, 1000 , 250, '{value:.0f}')
         layout.addWidget(self.rubatoTacho)
@@ -224,7 +225,7 @@ class pianoUI(QWidget):
         self.plotSelect = QComboBox()
         self.plotSelect.addItems(["-", "Pedal", "Level", "Tempo", "Legato"])
         self.plotSelect.currentIndexChanged.connect( self.plotIndexChange )
-        showLayout.addWidget(QLabel('Anzeige: '))
+        showLayout.addWidget(QLabel('View: '))
         showLayout.addWidget(self.plotSelect)
         ctlLayout.addWidget(showWidget)
 
@@ -243,9 +244,12 @@ class pianoUI(QWidget):
 
         return me
     def abspielen(self):
+        takt1 = self.setup.getInt('ersterTakt')
+        startTime = self.partiture.taktStart[takt1 - 1]
         list = []
         tScale = 60/self.setup.getFloat('bpm')/64
         for tone in self.soll:
+            if tone.position < startTime: continue
             ton  = tone.position * tScale
             toff = (tone.position + tone.ticks) * tScale
             list.append(MidiCMD(ton, 0, tone.taste, 50, True))
