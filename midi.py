@@ -44,7 +44,7 @@ class Midi():
     def __init__(self, port, caller):
 
         global midiObject, timeBuffer, cmdBuffer, stopKey, stopPedal
-        global token, playList, running, runCnt, stop
+        global token, playList, running, runCnt, stop, runProcess
 
         midiObject = caller
         timeBuffer, cmdBuffer = [], []
@@ -66,6 +66,7 @@ class Midi():
             running = False
             runCnt = 0
             stop = False
+            runProcess = True
             thread = threading.Thread(target=self.outputer)
             thread.start()
 
@@ -81,6 +82,10 @@ class Midi():
             self.inputPortname = inPortList[inPortID]
 
 
+    def close(self):
+        global token, playList, running, runCnt, stop, runProcess
+        token.release()
+        runProcess = False
 
     def getInputPortname(self):  return self.inputPortname
     def getOutputPortname(self): return self.outputPortname
@@ -92,10 +97,11 @@ class Midi():
         return newList
 
     def outputer(self):
-        global token, playList, running, runCnt, stop
+        global token, playList, running, runCnt, stop, runProcess
 
-        while(True):
+        while(runProcess):
             token.acquire()
+            if not runProcess: return
             running = True
             runCnt += 1
             list = self.sortList(playList)

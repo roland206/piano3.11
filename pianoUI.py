@@ -1,11 +1,4 @@
-import threading
-import time
-
-from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QBrush, QPixmap
-from PyQt5.QtWidgets import QWidget, QCheckBox, QFileDialog, QFormLayout, QLabel, QGroupBox, QGridLayout, QPushButton, QHBoxLayout, \
-    QVBoxLayout, QSpinBox, QDial, QMenu, QFrame,QComboBox
-from PyQt5.QtGui import QPainter, QPen, QColor, QFont, QBrush
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMessageBox
 from pianoPlot import *
 import numpy as np
 from Note import Note
@@ -36,7 +29,8 @@ class pianoUI(QWidget):
         self.speedData = {'valid': False}
         self.legatoData = {'valid': False}
 
-
+    def close(self):
+        self.midi.close()
     def saveMIDIData(self, cmds, times):
         if (len(cmds) > 0):
             with open(self.lastMIDIfilename, 'w') as f:
@@ -45,14 +39,18 @@ class pianoUI(QWidget):
                     f.write(f'{cmd[0]}:{cmd[1]}:{cmd[2]}:{times[i]}\n')
                     i += 1
     def loadMIDIData(self):
-        with open(self.lastMIDIfilename) as f:
-            lines = f.readlines()
-            cmds, times = [], []
-            for line in lines:
-                data = line.split(':')
-                cmds.append([int(data[0]), int(data[1]), int(data[2])])
-                times.append(float(data[3]))
-        self.bufferFull(cmds, times)
+        try:
+            with open(self.lastMIDIfilename) as f:
+                lines = f.readlines()
+                cmds, times = [], []
+                for line in lines:
+                    data = line.split(':')
+                    cmds.append([int(data[0]), int(data[1]), int(data[2])])
+                    times.append(float(data[3]))
+            self.bufferFull(cmds, times)
+        except FileNotFoundError:
+            QMessageBox.critical(self, "Re-load MIDI", f'File <{self.lastMIDIfilename}> not found')
+
     def bufferFull(self, cmds, times):
         self.saveMIDIData(cmds, times)
         keyTime, keyLevel, self.gespielt = [], [], []
@@ -205,7 +203,7 @@ class pianoUI(QWidget):
         btn.clicked.connect(self.wiederholen)
         btnLayout.addWidget(btn)
 
-        btn = QPushButton('Simulation')
+        btn = QPushButton('Clear input')
         btn.clicked.connect(self.simulation)
         btnLayout.addWidget(btn)
 
@@ -578,7 +576,7 @@ class Pedal():
         else:
             for i in range(start, len(self.mappedTimes)):
                 if self.level[i] <= Pedal.threshold: return i
-            return -1
+        return -1
 
     def getPlotRegions(self, x0, xend, t0, tScale):
         n = len(self.mappedTimes)
